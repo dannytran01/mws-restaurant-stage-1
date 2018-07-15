@@ -5,6 +5,7 @@ const browserSync = require('browser-sync').create();
 const del = require('del');
 const wiredep = require('wiredep').stream;
 const runSequence = require('run-sequence');
+const imageminPngquant = require('imagemin-pngquant');
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
@@ -71,9 +72,15 @@ gulp.task('html', ['styles', 'scripts'], () => {
     .pipe(gulp.dest('dist'));
 });
 
+gulp.task('icons', () => {
+  return gulp.src('app/icons/**/*')
+    .pipe($.cache($.imagemin({progressive:true, use: [imageminPngquant()]})))
+    .pipe(gulp.dest('dist/icons'));
+});
+
 gulp.task('images', () => {
   return gulp.src('app/images/**/*')
-    .pipe($.cache($.imagemin()))
+    .pipe($.cache($.imagemin({progressive:true, use: [imageminPngquant()]})))
     .pipe(gulp.dest('dist/images'));
 });
 
@@ -110,6 +117,7 @@ gulp.task('serve', () => {
     gulp.watch([
       'app/*.html',
       'app/images/**/*',
+      'app/icons/**/*',
       '.tmp/fonts/**/*'
     ]).on('change', reload);
 
@@ -117,6 +125,7 @@ gulp.task('serve', () => {
     gulp.watch('app/scripts/**/*.js', ['scripts']);
     gulp.watch('app/fonts/**/*', ['fonts']);
     gulp.watch('bower.json', ['wiredep', 'fonts']);
+    gulp.watch('app/sw.js', ['scripts']);
   });
 });
 
@@ -166,7 +175,7 @@ gulp.task('wiredep', () => {
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('build', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
+gulp.task('build', ['lint', 'html', 'icons', 'images', 'fonts', 'extras'], () => {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
