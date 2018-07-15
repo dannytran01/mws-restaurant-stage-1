@@ -9,7 +9,7 @@ A simple restaurant review site for the neighborhoods of Manhattan, Brooklyn, an
 
 ### Prerequisites
 1. npm 5.6.0
-2. Recent Modern internet browser - Good luck with I.E. LOL.
+2. Recent Modern internet browser (e.g. chrome)
 3. sails.js v1.0
 4. Data server: https://github.com/udacity/mws-restaurant-stage-2.git
 5. gulp 3.9.1
@@ -21,14 +21,16 @@ A simple restaurant review site for the neighborhoods of Manhattan, Brooklyn, an
 2. Go to its directory
 3. Install dependencies: npm i
 4. Install sails: npm i sails -g 
-5. Run the server in the background nohup node server
+5. Run the server in the background "nohup node server &"
 
 ## Restaurant App
-1. Go to 'mws-restaurant-stage-1' as the working directory and then run npm install 
-2. Get a Google API Key and swap out my API key for yours on 
+1. Go to 'mws-restaurant-stage-1' as the working directory
+2. Run "npm install"
+3. Get a Google API Key and swap out my API key for yours on 
 `https://maps.googleapis.com/maps/api/js?key=`
-3. Run "gulp serve:dist" on the working directory to get the prod server started.
-4. For dev mode, run "gulp serve"
+4. Run "gulp serve:dist" on the working directory to get the prod server started.
+5. For dev mode, run "gulp serve". Comment out staticUrls in sw.js if you need to debug.
+6. Go to 'localhost:9000' to launch site.
 
 
 ### Run Time Environment
