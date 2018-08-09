@@ -82,7 +82,7 @@
   line-height: 1.1;
 }
 #restaurant-img {
-	width: 90%;
+	width: 100%;
   border-top-left-radius: 30px;
   border-bottom-right-radius: 30px;
 }
@@ -100,7 +100,13 @@
   padding: 2px 0;
   text-align: center;
   text-transform: uppercase;
-	width: 90%;
+	width: 100%;
+}
+#restaurant-address{
+  text-align: center;
+}
+#restaurant-hours {
+  margin: 0px auto;
 }
 #restaurant-container{
   margin-top: 20px;
@@ -143,7 +149,6 @@
 #reviews-list {
   margin: 0;
   padding: 0;
-  width: 90%;
 }
 #reviews-list li {
   background-color: #fff;
@@ -153,7 +158,6 @@
   margin: 0 0 30px;
   overflow: hidden;
   position: relative;
-  width: 85%;
   border-top-left-radius: 30px;
   border-bottom-right-radius: 30px;
 }
