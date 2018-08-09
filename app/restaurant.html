@@ -45,6 +45,30 @@
       <table id="restaurant-hours"></table>
     </section>
     <!-- end restaurant -->
+
+    <!-- start review form -->
+    <section id="reviews-form-container">
+      <form>
+        <h3>Add Your Review!</h3>
+        <div>
+          <label for="username">Username:</label> 
+          <input type="text" id="username" placeholder="username" aria-required="true">
+        </div>
+        <div>
+          <label for="rating">Rating:</label> 
+          <input type="range" id="rating" value=5 min=1 max=5 aria-required="true">
+        </div>
+        <div>
+          <label for="comment-box">Review:</label> 
+          <textarea id="comment-box" rows="4" placeholder="What did you think?" aria-required="true"></textarea>
+        </div>
+        <div>
+          <input id="submit-review" type="submit" value="Add Review">
+        </div>
+      </form>
+    </section>
+    <!-- end review form -->
+
     <!-- Beginning reviews -->
     <section id="reviews-container">
       <ul id="reviews-list"></ul>
