@@ -7,14 +7,15 @@ class DBHelper {
    * Database URL.
    * Change this to restaurants.json file location on your server.
    */
-  static get DATABASE_URL() {
+  static get DOMAIN_URL() {
     const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
+    return `http://localhost:${port}`;
   }
 
   static openDB() {// call this before every idb transaction
     return idb.open('mwsDb', 1, upgradeDB => {
       upgradeDB.createObjectStore('restaurants', {keyPath: 'id'});
+      upgradeDB.createObjectStore('reviews', {keyPath: 'id'});
     });
   }
 
@@ -23,13 +24,46 @@ class DBHelper {
    */
   static fetchRestaurants(callback) {
 
-    fetch(DBHelper.DATABASE_URL)
+    fetch(`${DBHelper.DOMAIN_URL}/restaurants`)
         .then(response => response.json())
         .then(json => {
           DBHelper.persistRestaurantsInfoToIndexDb(json);
           callback(null, json);
         })
         .catch(err => callback(err, null));
+  }
+
+  /**
+   * Fetch a restaurant review.
+   */
+  static fetchReviews(id, callback) {
+
+    fetch(`${DBHelper.DOMAIN_URL}/reviews/?restaurant_id=${id}`)
+        .then(response => response.json())
+        .then(json => {
+          DBHelper.persistReviewsToIndexDb(json);
+          callback(null, json);
+        })
+        .catch(err => callback(err, null));
+  }
+
+  /**
+   * Post a review object {restaurant_id, name, rating, and comments}
+   */
+  static addReview(reviewObj, callback) {
+
+    fetch(`${DBHelper.DOMAIN_URL}/reviews/`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(reviewObj)
+        })
+      .then(response => response.json())
+      .then(jsonRes => callback(null, jsonRes))
+      .catch(err => callback(err, null));
+  }
+
+  static createReviewObj(restaurantId, name, rating, comments) {
+    return {'restaurant_id' : restaurantId, 'name': name, 'rating': rating, 'comments' : comments};
   }
 
   /**
@@ -56,6 +90,28 @@ class DBHelper {
     .catch(err => DBHelper.fetchRestaurantByIdFromDataServer(id, callback));
   }
 
+
+  static fetchResturantReviewsById(id, callback) {
+    DBHelper.fetchReviews(id, callback);
+    // DBHelper.openDB().then(db => {
+    //     const transaction = db.transaction('reviews');
+    //     const reviewsObjStore = transaction.objectStore('reviews');
+
+    //     //Parse int because the keys are actually int...not string
+    //     reviewsObjStore.get(parseInt(id))
+    //       .then(val => {
+    //         if(val){
+    //           callback(null, val);
+    //         }
+    //         else{
+    //           DBHelper.fetchReviews(id, callback);
+    //         }
+    //     });
+    //   })
+    // //If db fails, then always retrieve from server
+    // .catch(err => DBHelper.fetchReviews(id, callback));
+  }
+
 //Note to self: this is utilizing in-line key 'id', don't put a second arg otherwise it's consider an out-of-line key
 //which means you are specifying the id rather than extracting it "in-line"
  static persistRestaurantInfoToIndexDb(value){
@@ -66,11 +122,27 @@ class DBHelper {
   });
  }
 
+static persistReviewToIndexDb(value){
+  DBHelper.openDB().then(db => {
+    const transaction = db.transaction('reviews', 'readwrite');
+    const reviewsObjStore = transaction.objectStore('reviews');
+    reviewsObjStore.put(value);
+  });
+ }
+
  static persistRestaurantsInfoToIndexDb(restaurantArr){
     DBHelper.openDB().then(db => {
       const tx = db.transaction('restaurants', 'readwrite');
       const objStore = tx.objectStore('restaurants');
       restaurantArr.map(restaurant => objStore.put(restaurant));
+    });
+ }
+
+  static persistReviewsToIndexDb(reviewArr){
+    DBHelper.openDB().then(db => {
+      const tx = db.transaction('reviews', 'readwrite');
+      const objStore = tx.objectStore('reviews');
+      reviewArr.map(review => objStore.put(review));
     });
  }
 

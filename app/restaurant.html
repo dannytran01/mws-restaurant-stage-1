@@ -48,22 +48,22 @@
 
     <!-- start review form -->
     <section id="reviews-form-container">
-      <form>
+      <form id="review-form">
         <h3>Add Your Own Review!</h3>
         <div>
           <label for="username">Username:</label> 
-          <input type="text" id="username" placeholder="username" aria-required="true">
+          <input type="text" name="name" id="username" placeholder="username" aria-required="true">
         </div>
         <div>
           <label for="rating">Rating:</label> 
-          <input type="range" id="rating" value=5 min=1 max=5 aria-required="true">
+          <input type="range" name="rating" id="rating" value=5 min=1 max=5 aria-required="true">
         </div>
         <div>
-          <label for="comment-box">Review:</label> 
-          <textarea id="comment-box" rows="4" placeholder="What did you think?" aria-required="true"></textarea>
+          <label for="comment-box ">Review:</label> 
+          <textarea id="comment-box" name="comments" rows="4" placeholder="What did you think?" aria-required="true"></textarea>
         </div>
         <div>
-          <input id="submit-review" type="submit" value="Add Review">
+          <button type="button" onclick="submitReview()" id="submit-review">Add Review</button>
         </div>
       </form>
     </section>
@@ -71,6 +71,7 @@
 
     <!-- Beginning reviews -->
     <section id="reviews-container">
+      <h3>Reviews</h3>
       <ul id="reviews-list"></ul>
     </section>
     <!-- End reviews -->
