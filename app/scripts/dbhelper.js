@@ -90,7 +90,7 @@ class DBHelper {
     .catch(err => DBHelper.fetchRestaurantByIdFromDataServer(id, callback));
   }
 
-
+  // Need to handle indexed fetching
   static fetchResturantReviewsById(id, callback) {
     DBHelper.fetchReviews(id, callback);
     // DBHelper.openDB().then(db => {

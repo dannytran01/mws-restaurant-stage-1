@@ -6,7 +6,7 @@ var map;
  */
 window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
+    if (error) { 
       console.error(error);
     } 
     else {
@@ -18,14 +18,7 @@ window.initMap = () => {
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
 
-      DBHelper.fetchResturantReviewsById(self.restaurant.id, (error, reviews) => {
-        if(error){
-          console.error(error);
-        }
-        else {
-          fillReviewsHTML(reviews);
-        }
-      });
+      getReviewDataAndUpdateUI();
     }
   });
 }
@@ -57,10 +50,6 @@ const fetchRestaurantFromURL = (callback) => {
   }
 }
 
-const fetchRestaurantReviews = (callback) => {
-      DBHelper.fetchRestaurantReviews(self.restaurant.id);
-
-}
 
 /**
  * Create restaurant HTML and add it to the webpage
@@ -123,6 +112,17 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
   }
 }
 
+const getReviewDataAndUpdateUI = () => {
+  DBHelper.fetchResturantReviewsById(self.restaurant.id, (error, reviews) => {
+    if(error){
+      console.error(error);
+    }
+    else {
+      fillReviewsHTML(reviews);
+    }
+  });
+}
+
 /**
  * Create all reviews HTML and add them to the webpage.
  */
@@ -137,7 +137,7 @@ const fillReviewsHTML = (reviews) => {
   }
 
   const ul = document.getElementById('reviews-list');
-  //clean up any existing
+  //clean up any existing reviews
   while (ul.firstChild) {
     ul.removeChild(ul.firstChild);
   }
@@ -205,6 +205,9 @@ const formatDateTime = (dateTime) => {
   return new Date(dateTime).toLocaleDateString();
 }
 
+/**
+ * Handle review submission: Collect form data, submit, and update UI.
+ */
 const submitReview = () => {
 
   const url = window.location.search;
@@ -223,18 +226,9 @@ const submitReview = () => {
         console.log(err);
       }
       else{
+        //Clean up and update UI
         reviewFormEl.reset();
-        console.log(response);
-
-        // Update reviews
-        DBHelper.fetchResturantReviewsById(self.restaurant.id, (error, reviews) => {
-        if(error){
-          console.error(error);
-        }
-        else {
-          fillReviewsHTML(reviews);
-        }
-      });
+        getReviewDataAndUpdateUI();
       }
   });
 }
