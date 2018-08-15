@@ -211,24 +211,44 @@ const formatDateTime = (dateTime) => {
 const submitReview = () => {
 
   const url = window.location.search;
-  const id = url.substring(url.indexOf('=') + 1, url.length);
+  const idStr = url.substring(url.indexOf('=') + 1, url.length);
+  const id = parseInt(idStr);
 
   const reviewFormEl = document.getElementById('review-form');
-  const formData = DBHelper.createReviewObj(
-      id,
-      reviewFormEl.elements['name'].value,
-      reviewFormEl.elements['rating'].value,
-      reviewFormEl.elements['comments'].value
-  );
+
+  const name = reviewFormEl.elements['name'].value;
+  const rating = reviewFormEl.elements['rating'].value;
+  const comments = reviewFormEl.elements['comments'].value;
+
+  //Perform form validation
+  if ( !name || !comments) {
+    showToast('Please set a username and a comment');
+    return;
+  }
+
+  //create review and update UI
+  const formData = DBHelper.createReviewObj(id, name, rating, comments);
 
   DBHelper.addReview(formData, (err, response) => {
       if(err){
-        console.log(err);
+        showToast(`Error: ${err}`);
       }
       else{
         //Clean up and update UI
+        showToast('Successfully Added New Review!');
         reviewFormEl.reset();
         getReviewDataAndUpdateUI();
       }
   });
+}
+
+const showToast = (msg) => {
+  const toastEl = document.getElementById('toast');
+  toastEl.className = 'show';
+  toastEl.innerHTML = msg;
+
+  setTimeout( () => { 
+    toastEl.className = toastEl.className.replace('show', ''); 
+    toastEl.innerHTML = '';
+  }, 3000);
 }
