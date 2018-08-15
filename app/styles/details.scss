@@ -156,6 +156,13 @@
   input:focus, input:hover, textarea:focus, textarea:hover {
     box-shadow: 0 0 8px 3px orange;
   }
+
+  #ratingVal {
+    font-size: 18pt;
+    font-weight: bold;
+    color: orange;
+    padding-left: 10px;
+  }
 }
 
 #reviews-container {

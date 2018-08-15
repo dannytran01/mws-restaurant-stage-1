@@ -23,6 +23,14 @@ window.initMap = () => {
   });
 }
 
+const slider = document.getElementById('rating');
+const ratingVal = document.getElementById('ratingVal');
+ratingVal.innerHTML = slider.value;
+
+slider.oninput = function() {
+  ratingVal.innerHTML = this.value;
+}
+
 /**
  * Get current restaurant from page URL.
  */
@@ -252,3 +260,4 @@ const showToast = (msg) => {
     toastEl.innerHTML = '';
   }, 3000);
 }
+
