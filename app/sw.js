@@ -1,14 +1,25 @@
 const STATIC_CACHE = 'mws-restaurant-v1';
-const GLOBAL_CACHE = 'mws-contents';
+const MAP_CACHE = 'mws-google-v1';
 const PHOTO_CACHE = 'mws-content-imgs';
 
+// const staticUrls = [
+//     '/',
+//     'restaurant.html',
+//     'scripts/all_restaurant.js',
+//     'scripts/all_main.js',
+//     'styles/main.css'
+// ];
+
 const staticUrls = [
-    '/',
-    'restaurant.html',
-    'scripts/all_restaurant.js',
-    'scripts/all_main.js',
-    'styles/main.css'
-  ];
+  '/',
+  'restaurant.html',
+  'dbhelper.js',
+  'idb.js',
+  'main.js',
+  'restaurant_info.js',
+  'main.css',
+  'details.css'
+];
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -19,10 +30,15 @@ self.addEventListener('install', event => {
 
 
 self.addEventListener('fetch', event => {
-  var requestUrl = new URL(event.request.url);
+  const requestUrl = new URL(event.request.url);
 
   if (requestUrl.pathname.startsWith('/images')){
-    event.respondWith(servePhoto(event.request));
+    event.respondWith(cacheAndServe(event.request, PHOTO_CACHE));
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith('/maps-api-v3/api/')) {
+    event.respondWith(cacheAndServe(event.request, MAP_CACHE));
     return;
   }
 
@@ -32,35 +48,27 @@ self.addEventListener('fetch', event => {
         if(response !== undefined){
           return response;
         }
-
-        return fetch(event.request).then(networkResponse => {
-
-          if(event.request.method !== 'POST'){
-            let cachedResponse = networkResponse.clone();
-            caches.open(GLOBAL_CACHE).then(cache => 
-              cache.put(event.request, cachedResponse));
-          }
-          return networkResponse;
-        });
+        console.log(requestUrl.pathname);
+        return fetch(event.request);
     })
   );
 
 });
 
-function servePhoto(request){
-
-  var storageUrl = request.url.replace(/-\d+px\.jpg$/, '');
-
-  return caches.open(PHOTO_CACHE).then(cache => {
-    return cache.match(storageUrl).then(response => {
+function cacheAndServe(request, cache){
+  return caches.open(cache).then(cache => {
+    return cache.match(request.url).then(response => {
       if(response){
         return response;
       }
 
       return fetch(request).then(networkResponse => {
-        cache.put(storageUrl, networkResponse.clone());
+        cache.put(request.url, networkResponse.clone());
         return networkResponse;
       });
     });
   });
 }
+
+
+

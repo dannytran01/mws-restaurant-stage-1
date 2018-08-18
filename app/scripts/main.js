@@ -9,7 +9,7 @@ var markers = []
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   initialize();
-  //loadSw();
+  loadSw();
 });
 
 const loadSw = () => {
