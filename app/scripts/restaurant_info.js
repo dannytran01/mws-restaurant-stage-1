@@ -23,6 +23,9 @@ window.initMap = () => {
   });
 }
 
+/** 
+ *  Set up range UI
+ */
 const slider = document.getElementById('rating');
 const ratingVal = document.getElementById('ratingVal');
 ratingVal.innerHTML = slider.value;
@@ -245,6 +248,7 @@ const submitReview = () => {
         //Clean up and update UI
         showToast('Successfully Added New Review!');
         reviewFormEl.reset();
+        ratingVal.innerHTML = slider.value;
         getReviewDataAndUpdateUI();
       }
   });
