@@ -154,6 +154,13 @@ class DBHelper {
     });
   }
 
+  static fetchRestaurantFromIndexedDB(id) {
+    return DBHelper.openDB().then(db => {
+        return db.transaction('restaurants')
+          .objectStore('restaurants').get(id);
+    });
+  }
+
   static fetchRestaurantByCuisineAndNeighborhoodFromIndexedDB(cuisine, neighborhood){
     return DBHelper.fetchRestaurantsFromIndexedDB().then(restaurants => {
       let results = restaurants

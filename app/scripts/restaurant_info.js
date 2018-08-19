@@ -6,8 +6,19 @@ var map;
  */
 window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { 
+    if (error) { //offline
       console.error(error);
+      showToast('Currently offline');
+
+      //Attempt to use indexedDB values
+      const id = getParameterByName('id');
+      DBHelper.fetchRestaurantFromIndexedDB(id).then(result => {
+        if(result){
+          self.restaurant = result;
+          fillBreadcrumb();
+          getReviewDataAndUpdateUI();
+        }
+      });
     } 
     else {
       self.map = new google.maps.Map(document.getElementById('map'), {
@@ -17,7 +28,6 @@ window.initMap = () => {
       });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-
       getReviewDataAndUpdateUI();
     }
   });

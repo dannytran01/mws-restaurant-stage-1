@@ -12,7 +12,7 @@ const PHOTO_CACHE = 'mws-content-imgs';
 
 const staticUrls = [
   '/',
-  'restaurant.html',
+  '/restaurant.html',
   'dbhelper.js',
   'idb.js',
   'main.js',
@@ -40,6 +40,20 @@ self.addEventListener('fetch', event => {
   if (requestUrl.pathname.startsWith('/maps-api-v3/api/')) {
     event.respondWith(cacheAndServe(event.request, MAP_CACHE));
     return;
+  }
+
+  //Handle fetching restaurant info when query is present otherwise
+  //cache won't detect '/restaurant.html' file.
+  if (requestUrl.pathname.startsWith('/restaurant.html')) {
+    event.respondWith(    
+      caches.match('/restaurant.html')
+      .then(response => {
+        if(response !== undefined){
+          return response;
+        }
+        console.log(requestUrl.pathname);
+        return fetch('/restaurant.html');
+    }))
   }
 
   event.respondWith(
