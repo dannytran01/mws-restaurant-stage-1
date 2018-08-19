@@ -12,6 +12,9 @@ class DBHelper {
     return `http://localhost:${port}`;
   }
 
+  /**
+   * Set up IndexedDB if not yet created and open up the object store for access.
+   */
   static openDB() {// call this before every idb transaction
     return idb.open('mwsDb', 1, upgradeDB => {
       upgradeDB.createObjectStore('restaurants', {keyPath: 'id'});
@@ -69,45 +72,6 @@ class DBHelper {
   static createReviewObj(restaurantId, name, rating, comments) {
     return {'restaurant_id' : restaurantId, 'name': name, 'rating': rating, 'comments' : comments};
   }
-
-  // /**
-  //  * Fetch a restaurant by its ID.
-  //  */
-  // static fetchRestaurantById(id, callback) {
-  //   DBHelper.openDB().then(db => {
-  //       const transaction = db.transaction('restaurants');
-  //       const reviewsObjStore = transaction.objectStore('restaurants');
-
-  //       //Parse int because the keys are actually int...not string
-  //       reviewsObjStore.get(parseInt(id))
-  //         .then(val => {
-  //           if(val){
-  //             callback(null, val);
-  //           }
-  //           else{
-  //             DBHelper.fetchRestaurantByIdFromDataServer(id, callback);
-  //           }
-  //       });
-  //     })
-  //   //If db fails, then always retrieve from server
-  //   .catch(err => DBHelper.fetchRestaurantByIdFromDataServer(id, callback));
-  // }
-
-
- static fetchRestaurantByIdFromDataServer(id, callback){
-    DBHelper.fetchRestaurants((error, restaurants) => {
-    if (error) {
-      callback(error, null);
-    } else {
-      const restaurant = restaurants.find(r => r.id == id);
-      if (restaurant) { 
-        callback(null, restaurant);
-      } else { 
-        callback('Restaurant does not exist', null);
-      }
-    }
-  });
- }
 
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
@@ -183,6 +147,26 @@ class DBHelper {
       });
   }
 
+  static fetchRestaurantsFromIndexedDB() {
+    return DBHelper.openDB().then(db => {
+        return db.transaction('restaurants')
+          .objectStore('restaurants').getAll();
+    });
+  }
+
+  static fetchRestaurantByCuisineAndNeighborhoodFromIndexedDB(cuisine, neighborhood){
+    return DBHelper.fetchRestaurantsFromIndexedDB().then(restaurants => {
+      let results = restaurants
+      if (cuisine != 'all') { // filter by cuisine
+        results = results.filter(r => r.cuisine_type == cuisine);
+      }
+      if (neighborhood != 'all') { // filter by neighborhood
+        results = results.filter(r => r.neighborhood == neighborhood);
+      }
+      return results;
+    });
+  }
+
   // Reviews IndexedDB Funcs
   static persistReviewToIndexDb(value){
     DBHelper.openDB().then(db => {
@@ -199,6 +183,8 @@ class DBHelper {
         reviewArr.map(review => objStore.put(review));
       });
   }
+
+
 
 
 }

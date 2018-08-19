@@ -24,8 +24,12 @@ const loadSw = () => {
 
 const initialize = () => {
   DBHelper.fetchRestaurants((error, results) => {
-    if (error) {
-      console.error(error);
+    if (error) { //Fails to fetch from server, then fallback to db
+      DBHelper.fetchRestaurantsFromIndexedDB().then(results => {
+        fetchNeighborhoods(results);
+        fetchCuisines(results);
+      });
+      showToast('You\'re currently offline');
     }
     else{
       DBHelper.persistRestaurantsInfoToIndexDb(results);
@@ -33,12 +37,8 @@ const initialize = () => {
       fetchCuisines(results);
     }
   });
-  // .catch(offlineErr => {
-  //   //DBHelper.fetchFromDatabase
-  //   //if has data, populate
-  // });
-
 }
+
 /**
  * Handle neighborhoods
  */
@@ -130,8 +130,13 @@ const updateRestaurants = () => {
 
   DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
-      console.error(error);
-    } else {
+      DBHelper.fetchRestaurantByCuisineAndNeighborhoodFromIndexedDB(cuisine, neighborhood).then(restaurants => {
+        resetRestaurants(restaurants);
+        fillRestaurantsHTML();
+        showToast('You\'re currently offline');
+      });
+    } 
+    else {
       DBHelper.persistRestaurantsInfoToIndexDb(restaurants);
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
