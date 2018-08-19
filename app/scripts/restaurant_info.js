@@ -53,10 +53,9 @@ const fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
+      DBHelper.persistRestaurantInfoToIndexDb(restaurant);
       fillRestaurantHTML();
-      callback(null, restaurant)
-
-
+      callback(null, restaurant);
     });
   }
 }
@@ -124,11 +123,12 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 }
 
 const getReviewDataAndUpdateUI = () => {
-  DBHelper.fetchResturantReviewsById(self.restaurant.id, (error, reviews) => {
+  DBHelper.fetchRestaurantReviews(self.restaurant.id, (error, reviews) => {
     if(error){
       console.error(error);
     }
     else {
+      DBHelper.persistReviewsToIndexDb(reviews);
       fillReviewsHTML(reviews);
     }
   });

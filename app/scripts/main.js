@@ -28,10 +28,15 @@ const initialize = () => {
       console.error(error);
     }
     else{
+      DBHelper.persistRestaurantsInfoToIndexDb(results);
       fetchNeighborhoods(results);
       fetchCuisines(results);
     }
   });
+  // .catch(offlineErr => {
+  //   //DBHelper.fetchFromDatabase
+  //   //if has data, populate
+  // });
 
 }
 /**
@@ -127,6 +132,7 @@ const updateRestaurants = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
+      DBHelper.persistRestaurantsInfoToIndexDb(restaurants);
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
     }
@@ -224,4 +230,13 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
   });
 }
 
+const showToast = (msg) => {
+  const toastEl = document.getElementById('toast');
+  toastEl.className = 'show';
+  toastEl.innerHTML = msg;
 
+  setTimeout( () => { 
+    toastEl.className = toastEl.className.replace('show', ''); 
+    toastEl.innerHTML = '';
+  }, 3000);
+}

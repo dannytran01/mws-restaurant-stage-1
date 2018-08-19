@@ -16,6 +16,9 @@ class DBHelper {
     return idb.open('mwsDb', 1, upgradeDB => {
       upgradeDB.createObjectStore('restaurants', {keyPath: 'id'});
       upgradeDB.createObjectStore('reviews', {keyPath: 'id'});
+      
+      const reviewStore = upgradeDB.transaction.objectStore('reviews');
+      reviewStore.createIndex('restaurant_id', 'restaurant_id');
     });
   }
 
@@ -23,27 +26,29 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-
     fetch(`${DBHelper.DOMAIN_URL}/restaurants`)
         .then(response => response.json())
-        .then(json => {
-          DBHelper.persistRestaurantsInfoToIndexDb(json);
-          callback(null, json);
-        })
+        .then(json => callback(null, json))
+        .catch(err => callback(err, null));
+  }
+
+  /**
+   * Fetch a restaurants.
+   */
+  static fetchRestaurantById(id, callback) {
+    fetch(`${DBHelper.DOMAIN_URL}/restaurants/${id}`)
+        .then(response => response.json())
+        .then(json => callback(null, json))
         .catch(err => callback(err, null));
   }
 
   /**
    * Fetch a restaurant review.
    */
-  static fetchReviews(id, callback) {
-
+  static fetchRestaurantReviews(id, callback) {
     fetch(`${DBHelper.DOMAIN_URL}/reviews/?restaurant_id=${id}`)
         .then(response => response.json())
-        .then(json => {
-          DBHelper.persistReviewsToIndexDb(json);
-          callback(null, json);
-        })
+        .then(json => callback(null, json))
         .catch(err => callback(err, null));
   }
 
@@ -51,7 +56,6 @@ class DBHelper {
    * Post a review object {restaurant_id, name, rating, and comments}
    */
   static addReview(reviewObj, callback) {
-
     fetch(`${DBHelper.DOMAIN_URL}/reviews/`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -66,85 +70,29 @@ class DBHelper {
     return {'restaurant_id' : restaurantId, 'name': name, 'rating': rating, 'comments' : comments};
   }
 
-  /**
-   * Fetch a restaurant by its ID.
-   */
-  static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.openDB().then(db => {
-        const transaction = db.transaction('restaurants');
-        const reviewsObjStore = transaction.objectStore('restaurants');
+  // /**
+  //  * Fetch a restaurant by its ID.
+  //  */
+  // static fetchRestaurantById(id, callback) {
+  //   DBHelper.openDB().then(db => {
+  //       const transaction = db.transaction('restaurants');
+  //       const reviewsObjStore = transaction.objectStore('restaurants');
 
-        //Parse int because the keys are actually int...not string
-        reviewsObjStore.get(parseInt(id))
-          .then(val => {
-            if(val){
-              callback(null, val);
-            }
-            else{
-              DBHelper.fetchRestaurantByIdFromDataServer(id, callback);
-            }
-        });
-      })
-    //If db fails, then always retrieve from server
-    .catch(err => DBHelper.fetchRestaurantByIdFromDataServer(id, callback));
-  }
+  //       //Parse int because the keys are actually int...not string
+  //       reviewsObjStore.get(parseInt(id))
+  //         .then(val => {
+  //           if(val){
+  //             callback(null, val);
+  //           }
+  //           else{
+  //             DBHelper.fetchRestaurantByIdFromDataServer(id, callback);
+  //           }
+  //       });
+  //     })
+  //   //If db fails, then always retrieve from server
+  //   .catch(err => DBHelper.fetchRestaurantByIdFromDataServer(id, callback));
+  // }
 
-  // Need to handle indexed fetching
-  static fetchResturantReviewsById(id, callback) {
-    DBHelper.fetchReviews(id, callback);
-    // DBHelper.openDB().then(db => {
-    //     const transaction = db.transaction('reviews');
-    //     const reviewsObjStore = transaction.objectStore('reviews');
-
-    //     //Parse int because the keys are actually int...not string
-    //     reviewsObjStore.get(parseInt(id))
-    //       .then(val => {
-    //         if(val){
-    //           callback(null, val);
-    //         }
-    //         else{
-    //           DBHelper.fetchReviews(id, callback);
-    //         }
-    //     });
-    //   })
-    // //If db fails, then always retrieve from server
-    // .catch(err => DBHelper.fetchReviews(id, callback));
-  }
-
-//Note to self: this is utilizing in-line key 'id', don't put a second arg otherwise it's consider an out-of-line key
-//which means you are specifying the id rather than extracting it "in-line"
- static persistRestaurantInfoToIndexDb(value){
-  DBHelper.openDB().then(db => {
-    const transaction = db.transaction('restaurants', 'readwrite');
-    const reviewsObjStore = transaction.objectStore('restaurants');
-    reviewsObjStore.put(value);
-  });
- }
-
-static persistReviewToIndexDb(value){
-  DBHelper.openDB().then(db => {
-    const transaction = db.transaction('reviews', 'readwrite');
-    const reviewsObjStore = transaction.objectStore('reviews');
-    reviewsObjStore.put(value);
-  });
- }
-
- static persistRestaurantsInfoToIndexDb(restaurantArr){
-    DBHelper.openDB().then(db => {
-      const tx = db.transaction('restaurants', 'readwrite');
-      const objStore = tx.objectStore('restaurants');
-      restaurantArr.map(restaurant => objStore.put(restaurant));
-    });
- }
-
-  static persistReviewsToIndexDb(reviewArr){
-    DBHelper.openDB().then(db => {
-      const tx = db.transaction('reviews', 'readwrite');
-      const objStore = tx.objectStore('reviews');
-      reviewArr.map(review => objStore.put(review));
-    });
- }
 
  static fetchRestaurantByIdFromDataServer(id, callback){
     DBHelper.fetchRestaurants((error, restaurants) => {
@@ -153,7 +101,6 @@ static persistReviewToIndexDb(value){
     } else {
       const restaurant = restaurants.find(r => r.id == id);
       if (restaurant) { 
-        DBHelper.persistRestaurantInfoToIndexDb(restaurant);
         callback(null, restaurant);
       } else { 
         callback('Restaurant does not exist', null);
@@ -170,7 +117,8 @@ static persistReviewToIndexDb(value){
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
-      } else {
+      } 
+      else {
         let results = restaurants
         if (cuisine != 'all') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
@@ -210,5 +158,47 @@ static persistReviewToIndexDb(value){
     );
     return marker;
   }
+
+  /**
+   * IndexedDB functions
+   */
+
+   // Restaurant IndexedDB Funcs
+
+  //Note to self: this is utilizing in-line key 'id', don't put a second arg otherwise it's consider an out-of-line key
+  //which means you are specifying the id rather than extracting it "in-line"
+  static persistRestaurantInfoToIndexDb(value){
+    DBHelper.openDB().then(db => {
+      const transaction = db.transaction('restaurants', 'readwrite');
+      const reviewsObjStore = transaction.objectStore('restaurants');
+      reviewsObjStore.put(value);
+    });
+   }
+
+  static persistRestaurantsInfoToIndexDb(restaurantArr){
+      DBHelper.openDB().then(db => {
+        const tx = db.transaction('restaurants', 'readwrite');
+        const objStore = tx.objectStore('restaurants');
+        restaurantArr.map(restaurant => objStore.put(restaurant));
+      });
+  }
+
+  // Reviews IndexedDB Funcs
+  static persistReviewToIndexDb(value){
+    DBHelper.openDB().then(db => {
+      const transaction = db.transaction('reviews', 'readwrite');
+      const reviewsObjStore = transaction.objectStore('reviews');
+      reviewsObjStore.put(value);
+    });
+   }
+
+  static persistReviewsToIndexDb(reviewArr){
+      DBHelper.openDB().then(db => {
+        const tx = db.transaction('reviews', 'readwrite');
+        const objStore = tx.objectStore('reviews');
+        reviewArr.map(review => objStore.put(review));
+      });
+  }
+
 
 }
