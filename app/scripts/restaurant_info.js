@@ -2,25 +2,77 @@ let restaurant;
 var map;
 
 /**
- * Initialize Google map, called from HTML.
+ * Get current restaurant from page URL.
  */
-window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { //offline
-      console.error(error);
-      showToast('Currently offline');
+const fetchRestaurantFromURL = (callback) => {
+  if (self.restaurant) { // restaurant already fetched!
+    callback(null, self.restaurant)
+    return;
+  }
+  let id = getParameterByName('id');
+  if (!id) { // no id found in URL
+    error = 'No restaurant id in URL'
+    callback(error, null);
+  } else {
+    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+      if (!restaurant) { //Could not fetch from server...fallback
+        //Attempt to use indexedDB values    
+        id = parseInt(id); //str to int for the db keys
+        DBHelper.fetchRestaurantFromIndexedDB(id).then(cachedRestaurant => {
+          if(cachedRestaurant !== undefined){
+            self.restaurant = cachedRestaurant;
+            fillRestaurantHTML();
+            callback(null, cachedRestaurant);
+          }
+          else{
+            showToast('Unable to load from any source');
+          }
+        });
 
-      //Attempt to use indexedDB values
-      const id = getParameterByName('id');
-      DBHelper.fetchRestaurantFromIndexedDB(id).then(result => {
-        if(result){
-          self.restaurant = result;
-          fillBreadcrumb();
-          getReviewDataAndUpdateUI();
-        }
-      });
-    } 
-    else {
+        return;
+      }
+      self.restaurant = restaurant;
+      DBHelper.persistRestaurantInfoToIndexDb(restaurant);
+      fillRestaurantHTML();
+      callback(null, restaurant);
+
+    });
+  }
+}
+
+/**
+ * Get a parameter by name from page URL.
+ */
+const getParameterByName = (name, url) => {
+  if (!url)
+    url = window.location.href;
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+    results = regex.exec(url);
+  if (!results)
+    return null;
+  if (!results[2])
+    return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+/**
+ * Init map
+ */
+fetchRestaurantFromURL((error, restaurant) => {
+  if (error && restaurant) { //Fetched from indexedDB
+    showToast('Currently offline');
+  } 
+  else if (error) { //Could not fetch at all
+    console.log(error);
+  }
+  else { //Fetched from server
+    const map = document.createElement('script');
+    map.type = 'application/javascript';
+    map.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBoE0ChrfjbjaqBZ9Vz-4SWZXgdt7oawOA&libraries=places&callback=initMap';
+    document.getElementsByTagName('head')[0].appendChild(map);
+    
+    window.initMap = () => {
       self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
         center: restaurant.latlng,
@@ -30,8 +82,8 @@ window.initMap = () => {
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
       getReviewDataAndUpdateUI();
     }
-  });
-}
+  }
+});
 
 /** 
  *  Set up range UI
@@ -42,32 +94,6 @@ ratingVal.innerHTML = slider.value;
 
 slider.oninput = function() {
   ratingVal.innerHTML = this.value;
-}
-
-/**
- * Get current restaurant from page URL.
- */
-const fetchRestaurantFromURL = (callback) => {
-  if (self.restaurant) { // restaurant already fetched!
-    callback(null, self.restaurant)
-    return;
-  }
-  const id = getParameterByName('id');
-  if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
-    callback(error, null);
-  } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      self.restaurant = restaurant;
-      if (!restaurant) {
-        console.error(error);
-        return;
-      }
-      DBHelper.persistRestaurantInfoToIndexDb(restaurant);
-      fillRestaurantHTML();
-      callback(null, restaurant);
-    });
-  }
 }
 
 
@@ -203,21 +229,6 @@ const fillBreadcrumb = (restaurant=self.restaurant) => {
   breadcrumb.appendChild(li);
 }
 
-/**
- * Get a parameter by name from page URL.
- */
-const getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-    results = regex.exec(url);
-  if (!results)
-    return null;
-  if (!results[2])
-    return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
 
 /**
 * Handle date time conversion to M/DD/YYYY for date input and iso formats

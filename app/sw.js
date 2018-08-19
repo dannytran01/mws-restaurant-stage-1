@@ -50,10 +50,11 @@ self.addEventListener('fetch', event => {
       .then(response => {
         if(response !== undefined){
           return response;
-        }
+        } 
         console.log(requestUrl.pathname);
         return fetch('/restaurant.html');
-    }))
+    }));
+    return;
   }
 
   event.respondWith(
@@ -63,7 +64,8 @@ self.addEventListener('fetch', event => {
           return response;
         }
         console.log(requestUrl.pathname);
-        return fetch(event.request);
+        return fetch(event.request)
+        .catch(err => {return err;});
     })
   );
 
