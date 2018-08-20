@@ -60,13 +60,12 @@ const getParameterByName = (name, url) => {
  * Init map
  */
 fetchRestaurantFromURL((error, restaurant) => {
-  if (error && restaurant) { //Fetched from indexedDB
-    showToast('Currently offline');
-  } 
-  else if (error) { //Could not fetch at all
+  if (error) { //Could not fetch at all
     console.log(error);
   }
   else { //Fetched from server
+    getReviewDataAndUpdateUI();
+
     const map = document.createElement('script');
     map.type = 'application/javascript';
     map.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBoE0ChrfjbjaqBZ9Vz-4SWZXgdt7oawOA&libraries=places&callback=initMap';
@@ -80,7 +79,6 @@ fetchRestaurantFromURL((error, restaurant) => {
       });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-      getReviewDataAndUpdateUI();
     }
   }
 });
@@ -160,8 +158,14 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 
 const getReviewDataAndUpdateUI = () => {
   DBHelper.fetchRestaurantReviews(self.restaurant.id, (error, reviews) => {
-    if(error){
+    if(error){ //Failed to fetch from server
       console.error(error);
+      const id = parseInt(self.restaurant.id);
+      DBHelper.fetchReviewsFromIndexedDB(id).then(cachedReviews => {
+        if(cachedReviews !== undefined) {
+          fillReviewsHTML(cachedReviews);
+        }
+      });
     }
     else {
       DBHelper.persistReviewsToIndexDb(reviews);

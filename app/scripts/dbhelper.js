@@ -191,7 +191,14 @@ class DBHelper {
       });
   }
 
-
+  static fetchReviewsFromIndexedDB(id) {
+    return DBHelper.openDB().then(db => {
+        return db.transaction('reviews')
+          .objectStore('reviews')
+          .index('restaurant_id')
+          .getAll(id);
+    });
+  }
 
 
 }
