@@ -65,6 +65,7 @@ fetchRestaurantFromURL((error, restaurant) => {
   }
   else { //Fetched from server
     getReviewDataAndUpdateUI();
+    fillBreadcrumb();
 
     const map = document.createElement('script');
     map.type = 'application/javascript';
@@ -77,7 +78,7 @@ fetchRestaurantFromURL((error, restaurant) => {
         center: restaurant.latlng,
         scrollwheel: false
       });
-      fillBreadcrumb();
+      
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   }
