@@ -28,6 +28,8 @@ const initialize = () => {
       DBHelper.fetchRestaurantsFromIndexedDB().then(results => {
         fetchNeighborhoods(results);
         fetchCuisines(results);
+        resetRestaurants(results);
+        fillRestaurantsHTML();  
       });
       showToast('You\'re currently offline');
     }
@@ -35,6 +37,8 @@ const initialize = () => {
       DBHelper.persistRestaurantsInfoToIndexDb(results);
       fetchNeighborhoods(results);
       fetchCuisines(results);
+      resetRestaurants(results);
+      fillRestaurantsHTML();  
     }
   });
 }
@@ -140,6 +144,7 @@ const updateRestaurants = () => {
       DBHelper.persistRestaurantsInfoToIndexDb(restaurants);
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
+      addMarkersToMap();
     }
   })
 }
@@ -167,7 +172,6 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap();
 }
 
 /**

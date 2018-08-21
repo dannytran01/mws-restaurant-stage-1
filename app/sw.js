@@ -33,6 +33,7 @@ self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
 
   if (requestUrl.pathname.startsWith('/images')){
+    console.log(requestUrl.pathname);
     event.respondWith(cacheAndServe(event.request, PHOTO_CACHE));
     return;
   }
