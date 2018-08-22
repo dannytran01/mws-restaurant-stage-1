@@ -267,8 +267,15 @@ const submitReview = () => {
   const formData = DBHelper.createReviewObj(id, name, rating, comments);
 
   DBHelper.addReview(formData, (err, response) => {
-      if(err){
-        showToast(`Error: ${err}`);
+      if(err){ //Fails to post, then save to indexedDB instead
+        DBHelper.persistReviewToBePosted(formData);
+        formData.updatedAt = Date.now();
+
+        //Show on UI though.
+        const ul = document.getElementById('reviews-list');
+        ul.appendChild(createReviewHTML(formData));
+
+        showToast('Offline: Unable to submit right now');
       }
       else{
         //Clean up and update UI

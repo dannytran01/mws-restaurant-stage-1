@@ -19,6 +19,8 @@ class DBHelper {
     return idb.open('mwsDb', 1, upgradeDB => {
       upgradeDB.createObjectStore('restaurants', {keyPath: 'id'});
       upgradeDB.createObjectStore('reviews', {keyPath: 'id'});
+      upgradeDB.createObjectStore('offline', {autoIncrement: true}); //note, if you want to auto-increment,
+      //do not define a keyPath...
       
       const reviewStore = upgradeDB.transaction.objectStore('reviews');
       reviewStore.createIndex('restaurant_id', 'restaurant_id');
@@ -200,5 +202,13 @@ class DBHelper {
     });
   }
 
+  // Offline IndexedDB Funcs
+  static persistReviewToBePosted(value){
+    DBHelper.openDB().then(db => {
+      const transaction = db.transaction('offline', 'readwrite');
+      const reviewsObjStore = transaction.objectStore('offline');
+      reviewsObjStore.add(value);
+    });
+  }
 
 }
