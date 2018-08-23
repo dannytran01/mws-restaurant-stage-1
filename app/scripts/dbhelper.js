@@ -199,8 +199,8 @@ class DBHelper {
           if (cursor.value.id === undefined && cursor.value.existInServer === 'Y'){ //clean up
             cursor.delete();
           }
-          //Find and add to existing reviews if id is in the DB
           else if (cursor.value.id && reviewMap.has(cursor.value.id)) {
+            //Find and add to existing reviews if id is in the DB
             let review = reviewMap.get(cursor.value.id);
             existingReviews.set(cursor.key, review);
             reviewMap.delete(cursor.value.id);
@@ -228,7 +228,7 @@ class DBHelper {
       for(var [key, review] of existingReviews.entries()) {
         reviewsObjStore.put(review, key);
       }
-      callback(null, null);
+      callback();
     });
   }
 
@@ -245,20 +245,22 @@ class DBHelper {
     return Promise.resolve(DBHelper.openDB().then(db => {
       const tx = db.transaction('reviews', 'readwrite');
       const reviewsObjStore = tx.objectStore('reviews');
+      let reviewArr = [];
 
       reviewsObjStore.iterateCursor(cursor => {
           if (!cursor) return;
 
           if (cursor.value.existInServer && cursor.value.existInServer === 'N') {
             let reviewObj = cursor.value;
-            DBHelper.addReview(reviewObj, (err, response) => {});
+            // DBHelper.addReview(reviewObj, (err, response) => {});
+            reviewArr.push(reviewObj);
             reviewObj.existInServer = 'Y';
             cursor.update(reviewObj);
           }
           cursor.continue();
       });
 
-      tx.complete.then(() =>{});
+      return tx.complete.then(() =>{ return reviewArr});
     }));
   }
 

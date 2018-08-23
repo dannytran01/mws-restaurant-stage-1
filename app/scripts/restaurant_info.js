@@ -66,8 +66,15 @@ fetchRestaurantFromURL((error, restaurant) => {
     console.log(error);
   }
   else { //Fetched from server
-    DBHelper.updateAllReviewsNotUpdatedToServer().then( () => {
-      getReviewDataAndUpdateUI();
+    DBHelper.updateAllReviewsNotUpdatedToServer().then((addedReviews) => {
+      if(addedReviews) {
+        DBHelper.addReview(addedReviews[0], (err, response) => {
+          getReviewDataAndUpdateUI();
+        });
+      }
+      else{
+        getReviewDataAndUpdateUI();
+      }
     });
     
     fillBreadcrumb();
@@ -298,8 +305,15 @@ const submitReview = () => {
       else{
         //Is online - update UI
         showToast('Successfully Added New Review!');
-        DBHelper.updateAllReviewsNotUpdatedToServer().then(() =>{
-          getReviewDataAndUpdateUI();
+        DBHelper.updateAllReviewsNotUpdatedToServer().then((addedReviews) => {
+          if(addedReviews) {
+            DBHelper.addReview(addedReviews[0], (err, response) => {
+              getReviewDataAndUpdateUI();
+            });
+          }
+          else{
+            getReviewDataAndUpdateUI();
+          }
         });
       }
   });
