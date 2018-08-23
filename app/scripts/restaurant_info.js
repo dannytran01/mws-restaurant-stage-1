@@ -67,8 +67,8 @@ fetchRestaurantFromURL((error, restaurant) => {
   }
   else { //Fetched from server
     DBHelper.updateAllReviewsNotUpdatedToServer().then((addedReviews) => {
-      if(addedReviews) {
-        DBHelper.addReview(addedReviews[0], (err, response) => {
+      if(addedReviews && addedReviews.length > 0) {
+        DBHelper.addReview(addedReviews, (err, response) => {
           getReviewDataAndUpdateUI();
         });
       }
@@ -306,8 +306,8 @@ const submitReview = () => {
         //Is online - update UI
         showToast('Successfully Added New Review!');
         DBHelper.updateAllReviewsNotUpdatedToServer().then((addedReviews) => {
-          if(addedReviews) {
-            DBHelper.addReview(addedReviews[0], (err, response) => {
+          if(addedReviews && addedReviews.length > 0) {
+            DBHelper.addReview(addedReviews, (err, response) => {
               getReviewDataAndUpdateUI();
             });
           }
