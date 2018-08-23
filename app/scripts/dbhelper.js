@@ -18,12 +18,12 @@ class DBHelper {
   static openDB() {// call this before every idb transaction
     return idb.open('mwsDb', 1, upgradeDB => {
       upgradeDB.createObjectStore('restaurants', {keyPath: 'id'});
-      upgradeDB.createObjectStore('reviews', {keyPath: 'id'});
-      upgradeDB.createObjectStore('offline', {autoIncrement: true}); //note, if you want to auto-increment,
+      upgradeDB.createObjectStore('reviews', {autoIncrement: true}); //note, if you want to auto-increment,
       //do not define a keyPath...
       
       const reviewStore = upgradeDB.transaction.objectStore('reviews');
       reviewStore.createIndex('restaurant_id', 'restaurant_id');
+      reviewStore.createIndex('exist_in_server', 'existInServer');
     });
   }
 
@@ -48,12 +48,15 @@ class DBHelper {
   }
 
   /**
-   * Fetch a restaurant review.
+   * Fetch a restaurant review and mark that they came from the server.
    */
   static fetchRestaurantReviews(id, callback) {
     fetch(`${DBHelper.DOMAIN_URL}/reviews/?restaurant_id=${id}`)
         .then(response => response.json())
-        .then(json => callback(null, json))
+        .then(json => {
+          json.map(review => review.existInServer = 'Y');
+          callback(null, json);
+        })
         .catch(err => callback(err, null));
   }
 
@@ -67,12 +70,15 @@ class DBHelper {
           body: JSON.stringify(reviewObj)
         })
       .then(response => response.json())
-      .then(jsonRes => callback(null, jsonRes))
+      .then(jsonRes => {
+        jsonRes.existInServer = 'Y';
+        callback(null, jsonRes);
+      })
       .catch(err => callback(err, null));
   }
 
-  static createReviewObj(restaurantId, name, rating, comments) {
-    return {'restaurant_id' : restaurantId, 'name': name, 'rating': rating, 'comments' : comments};
+  static createReviewObj(restaurantId, name, rating, comments, existInServer = 'Y') {
+    return {'restaurant_id' : restaurantId, 'name': name, 'rating': rating, 'comments' : comments, 'existInServer': existInServer};
   }
 
   /**
@@ -176,21 +182,54 @@ class DBHelper {
     });
   }
 
-  // Reviews IndexedDB Funcs
-  static persistReviewToIndexDb(value){
-    DBHelper.openDB().then(db => {
-      const transaction = db.transaction('reviews', 'readwrite');
-      const reviewsObjStore = transaction.objectStore('reviews');
-      reviewsObjStore.put(value);
-    });
-   }
+  // Reviews IndexedDB Funcs 
 
-  static persistReviewsToIndexDb(reviewArr){
+  static persistReviewsToIndexDb(reviewArr, callback){
       DBHelper.openDB().then(db => {
         const tx = db.transaction('reviews', 'readwrite');
-        const objStore = tx.objectStore('reviews');
-        reviewArr.map(review => objStore.put(review));
+        const reviewsObjStore = tx.objectStore('reviews');
+
+        const reviewMap = new Map(reviewArr.map(review => [review.id, review]));
+        const existingReviews = new Map();
+
+        // Due to using autoincrement, we have to use handling update through cursor - hashmap version
+        reviewsObjStore.iterateCursor(cursor => {
+          if (!cursor) return;
+
+          if (cursor.value.id === undefined && cursor.value.existInServer === 'Y'){ //clean up
+            cursor.delete();
+          }
+          //Find and add to existing reviews if id is in the DB
+          else if (cursor.value.id && reviewMap.has(cursor.value.id)) {
+            let review = reviewMap.get(cursor.value.id);
+            existingReviews.set(cursor.key, review);
+            reviewMap.delete(cursor.value.id);
+          }
+          cursor.continue();
+        });
+
+        tx.complete.then(() =>{
+          DBHelper.insertReviews(reviewMap, existingReviews, callback);
+        });
       });
+  }
+
+  //Joint callback method to persistReviewsToIndexDb
+  static insertReviews(newReviews, existingReviews, callback){
+   DBHelper.openDB().then(db => {
+      const tx = db.transaction('reviews', 'readwrite');
+      const reviewsObjStore = tx.objectStore('reviews');
+
+      for(var value of newReviews.values()) {
+        reviewsObjStore.put(value);
+      }
+
+      //update object store reviews
+      for(var [key, review] of existingReviews.entries()) {
+        reviewsObjStore.put(review, key);
+      }
+      callback(null, null);
+    });
   }
 
   static fetchReviewsFromIndexedDB(id) {
@@ -202,13 +241,27 @@ class DBHelper {
     });
   }
 
-  // Offline IndexedDB Funcs
-  static persistReviewToBePosted(value){
-    DBHelper.openDB().then(db => {
-      const transaction = db.transaction('offline', 'readwrite');
-      const reviewsObjStore = transaction.objectStore('offline');
-      reviewsObjStore.add(value);
-    });
+  static updateAllReviewsNotUpdatedToServer(){
+    return Promise.resolve(DBHelper.openDB().then(db => {
+      const tx = db.transaction('reviews', 'readwrite');
+      const reviewsObjStore = tx.objectStore('reviews');
+
+      reviewsObjStore.iterateCursor(cursor => {
+          if (!cursor) return;
+
+          if (cursor.value.existInServer && cursor.value.existInServer === 'N') {
+            let reviewObj = cursor.value;
+            DBHelper.addReview(reviewObj, (err, response) => {});
+            reviewObj.existInServer = 'Y';
+            cursor.update(reviewObj);
+          }
+          cursor.continue();
+      });
+
+      tx.complete.then(() =>{});
+    }));
   }
+
+
 
 }

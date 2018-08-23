@@ -13,7 +13,8 @@ const fetchRestaurantFromURL = (callback) => {
   if (!id) { // no id found in URL
     error = 'No restaurant id in URL'
     callback(error, null);
-  } else {
+  } 
+  else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       if (!restaurant) { //Could not fetch from server...fallback
         //Attempt to use indexedDB values    
@@ -23,19 +24,20 @@ const fetchRestaurantFromURL = (callback) => {
             self.restaurant = cachedRestaurant;
             fillRestaurantHTML();
             callback(null, cachedRestaurant);
+            showToast('You\'re currently offline');
           }
           else{
-            showToast('Unable to load from any source');
+            showToast('Offline: Unable to load from any source');
           }
         });
-
         return;
       }
+
+      //online access
       self.restaurant = restaurant;
       DBHelper.persistRestaurantInfoToIndexDb(restaurant);
       fillRestaurantHTML();
       callback(null, restaurant);
-
     });
   }
 }
@@ -64,7 +66,10 @@ fetchRestaurantFromURL((error, restaurant) => {
     console.log(error);
   }
   else { //Fetched from server
-    getReviewDataAndUpdateUI();
+    DBHelper.updateAllReviewsNotUpdatedToServer().then( () => {
+      getReviewDataAndUpdateUI();
+    });
+    
     fillBreadcrumb();
 
     const map = document.createElement('script');
@@ -83,6 +88,7 @@ fetchRestaurantFromURL((error, restaurant) => {
     }
   }
 });
+
 
 /** 
  *  Set up range UI
@@ -157,11 +163,14 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
   }
 }
 
+/**
+ * Serve from indexedDB
+ */
 const getReviewDataAndUpdateUI = () => {
   DBHelper.fetchRestaurantReviews(self.restaurant.id, (error, reviews) => {
-    if(error){ //Failed to fetch from server
-      console.error(error);
-      const id = parseInt(self.restaurant.id);
+    const id = parseInt(self.restaurant.id);
+
+    if(error) { 
       DBHelper.fetchReviewsFromIndexedDB(id).then(cachedReviews => {
         if(cachedReviews !== undefined) {
           fillReviewsHTML(cachedReviews);
@@ -169,8 +178,15 @@ const getReviewDataAndUpdateUI = () => {
       });
     }
     else {
-      DBHelper.persistReviewsToIndexDb(reviews);
-      fillReviewsHTML(reviews);
+      DBHelper.persistReviewsToIndexDb(reviews, () => {
+        
+         DBHelper.fetchReviewsFromIndexedDB(id).then(cachedReviews => {
+          if(cachedReviews !== undefined) {
+            fillReviewsHTML(cachedReviews);
+          }
+        });
+        
+      });
     }
   });
 }
@@ -264,27 +280,33 @@ const submitReview = () => {
   }
 
   //create review and update UI
-  const formData = DBHelper.createReviewObj(id, name, rating, comments);
+  const reviewObj = DBHelper.createReviewObj(id, name, rating, comments);
 
-  DBHelper.addReview(formData, (err, response) => {
+  DBHelper.addReview(reviewObj, (err, response) => {
       if(err){ //Fails to post, then save to indexedDB instead
-        DBHelper.persistReviewToBePosted(formData);
-        formData.updatedAt = Date.now();
+        reviewObj.existInServer = 'N'; //This will indicate that we need to update the server when online
+        DBHelper.persistReviewsToIndexDb([reviewObj], () => {
+          //purposely do nothing
+        });
+        reviewObj.updatedAt = Date.now(); //This is needed to fill offline UI
 
         //Show on UI though.
         const ul = document.getElementById('reviews-list');
-        ul.appendChild(createReviewHTML(formData));
-
-        showToast('Offline: Unable to submit right now');
+        ul.appendChild(createReviewHTML(reviewObj));
+        showToast('You\`re currently offline');
       }
       else{
-        //Clean up and update UI
+        //Is online - update UI
         showToast('Successfully Added New Review!');
-        reviewFormEl.reset();
-        ratingVal.innerHTML = slider.value;
-        getReviewDataAndUpdateUI();
+        DBHelper.updateAllReviewsNotUpdatedToServer().then(() =>{
+          getReviewDataAndUpdateUI();
+        });
       }
   });
+
+  //Clean up
+  reviewFormEl.reset();
+  ratingVal.innerHTML = slider.value;
 }
 
 const showToast = (msg) => {
@@ -297,4 +319,6 @@ const showToast = (msg) => {
     toastEl.innerHTML = '';
   }, 3000);
 }
+
+
 
