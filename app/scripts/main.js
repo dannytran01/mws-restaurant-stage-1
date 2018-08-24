@@ -24,16 +24,25 @@ const loadSw = () => {
 
 const initialize = () => {
   DBHelper.fetchRestaurants((error, results) => {
-    if (error) {
-      console.error(error);
+    if (error) { //Fails to fetch from server, then fallback to db
+      DBHelper.fetchRestaurantsFromIndexedDB().then(results => {
+        fetchNeighborhoods(results);
+        fetchCuisines(results);
+        resetRestaurants(results);
+        fillRestaurantsHTML();  
+      });
+      showToast('You\'re currently offline');
     }
     else{
+      DBHelper.persistRestaurantsInfoToIndexDb(results);
       fetchNeighborhoods(results);
       fetchCuisines(results);
+      resetRestaurants(results);
+      fillRestaurantsHTML();  
     }
   });
-
 }
+
 /**
  * Handle neighborhoods
  */
@@ -125,10 +134,17 @@ const updateRestaurants = () => {
 
   DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
-      console.error(error);
-    } else {
+      DBHelper.fetchRestaurantByCuisineAndNeighborhoodFromIndexedDB(cuisine, neighborhood).then(restaurants => {
+        resetRestaurants(restaurants);
+        fillRestaurantsHTML();
+        showToast('You\'re currently offline');
+      });
+    } 
+    else {
+      DBHelper.persistRestaurantsInfoToIndexDb(restaurants);
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
+      addMarkersToMap();
     }
   })
 }
@@ -156,7 +172,6 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap();
 }
 
 /**
@@ -224,4 +239,13 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
   });
 }
 
+const showToast = (msg) => {
+  const toastEl = document.getElementById('toast');
+  toastEl.className = 'show';
+  toastEl.innerHTML = msg;
 
+  setTimeout( () => { 
+    toastEl.className = toastEl.className.replace('show', ''); 
+    toastEl.innerHTML = '';
+  }, 3000);
+}

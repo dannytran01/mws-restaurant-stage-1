@@ -45,11 +45,39 @@
       <table id="restaurant-hours"></table>
     </section>
     <!-- end restaurant -->
+
+    <!-- start review form -->
+    <section id="reviews-form-container">
+      <form id="review-form">
+        <h3>Add Your Own Review!</h3>
+        <div>
+          <label for="username">Username:</label> 
+          <input type="text" name="name" id="username" placeholder="username" aria-required="true">
+        </div>
+        <div>
+          <label for="rating">Rating:</label>
+          <input type="range" name="rating" id="rating" min=1 max=5 aria-required="true">
+          <span id="ratingVal"></p>
+        </div>
+        <div>
+          <label for="comment-box ">Review:</label> 
+          <textarea id="comment-box" name="comments" rows="4" placeholder="What did you think?" aria-required="true"></textarea>
+        </div>
+        <div>
+          <button type="button" onclick="submitReview()" id="submit-review">Add Review</button>
+        </div>
+      </form>
+    </section>
+    <!-- end review form -->
+
     <!-- Beginning reviews -->
     <section id="reviews-container">
+      <h3>Reviews</h3>
       <ul id="reviews-list"></ul>
     </section>
     <!-- End reviews -->
+
+    <div id="toast"></div>
   </main>
   <!-- End main -->
 
@@ -66,8 +94,6 @@
   <script type="application/javascript" charset="utf-8" src="dbhelper.js"></script>
   <script type="application/javascript" charset="utf-8" src="restaurant_info.js"></script>
   <!-- endbuild -->
-  <!-- Google Maps -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBoE0ChrfjbjaqBZ9Vz-4SWZXgdt7oawOA&libraries=places&callback=initMap"></script>
   <!-- End scripts -->
 
 </body>

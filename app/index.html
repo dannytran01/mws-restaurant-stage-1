@@ -20,15 +20,15 @@
     </nav>
   </header>
 
-  <main id="maincontent">
+  <main id="maincontent" onclick="genMap()">
     <section id="map-container">
-      <div role="application" aria-label="location" id="map" style="height: 400px; width: 100%; background-color: #ccc;" onclick="genMap()"></div>
+      <div role="application" aria-label="location" id="map" style="height: 400px; width: 100%; background-color: #ccc;"></div>
     </section>
 
     <section>
       <div role="listbox" class="filter-options">
         <h2>Filter Results</h2>
-        <select id="neighborhoods-select" name="neighborhoods" aria-label="neighborhoods select" onchange="updateRestaurants()" onclick="genMap()">
+        <select id="neighborhoods-select" name="neighborhoods" aria-label="neighborhoods select" onchange="updateRestaurants()">
           <option value="all">All Neighborhoods</option>
         </select>
         <select id="cuisines-select" name="cuisines" aria-label="cuisines select" onchange="updateRestaurants()">
@@ -40,6 +40,8 @@
     <section>
       <ul id="restaurants-list"></ul>
     </section>
+
+    <div id="toast"></div>
   </main>
 
   <!-- build:js scripts/all_main.js -->

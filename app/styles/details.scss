@@ -82,7 +82,7 @@
   line-height: 1.1;
 }
 #restaurant-img {
-	width: 90%;
+	width: 100%;
   border-top-left-radius: 30px;
   border-bottom-right-radius: 30px;
 }
@@ -100,17 +100,71 @@
   padding: 2px 0;
   text-align: center;
   text-transform: uppercase;
-	width: 90%;
+	width: 100%;
+}
+#restaurant-address{
+  text-align: center;
+}
+#restaurant-hours {
+  margin: 0px auto;
 }
 #restaurant-container{
   margin-top: 20px;
 }
-#restaurant-container, #reviews-container {
+#restaurant-container, #reviews-container, #reviews-form-container {
   border-bottom: 1px solid #d9d9d9;
   border-top: 1px solid #fff;
   padding: 40px 40px 30px;
   width: 50%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
+
+#reviews-form-container{
+  div {
+    padding: 10px 0px 10px 10px;
+  }
+
+  #comment-box {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  #submit-review {
+    width: 100%;
+    height: 25px;
+  }
+
+  #submit-review:focus, #submit-review:hover {
+    background-color: #3397DB;
+    color: #FFF;
+    text-decoration: underline;
+    font-weight: bold;
+    border-bottom: 0;
+  }
+
+  #submit-review {
+    background-color: orange;
+    border-bottom: 3px solid #eee;
+    color: #242424;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 10pt;
+    text-transform: uppercase;
+  }
+
+  input:focus, input:hover, textarea:focus, textarea:hover {
+    box-shadow: 0 0 8px 3px orange;
+  }
+
+  #ratingVal {
+    font-size: 18pt;
+    font-weight: bold;
+    color: orange;
+    padding-left: 10px;
+  }
+}
+
 #reviews-container {
   padding: 30px 40px 80px;
 }
@@ -124,7 +178,6 @@
 #reviews-list {
   margin: 0;
   padding: 0;
-  width: 90%;
 }
 #reviews-list li {
   background-color: #fff;
@@ -134,7 +187,6 @@
   margin: 0 0 30px;
   overflow: hidden;
   position: relative;
-  width: 85%;
   border-top-left-radius: 30px;
   border-bottom-right-radius: 30px;
 }
@@ -173,12 +225,57 @@
   color: #666;
 }
 
+/* ====================== Toasts ====================== */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #444;
+    color: white;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 50px;
+    font-size: 17px;
+}
+
+#toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* ========= Specifies the animation code =========== */
+@keyframes fadein {
+    from {
+        bottom: 0; 
+        opacity: 0;
+    }
+    to {
+        bottom: 50px; 
+        opacity: 1;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 50px; 
+        opacity: 1;
+    }
+    to {
+        bottom: 0; 
+        opacity: 0;
+    }
+}
+
+/* ====================== Media Query ====================== */
 @media screen and (max-width: 800px){
 
-  #restaurant-container, #reviews-container {
-    width: 100%;
-    max-width: 100%;
+  #restaurant-container, #reviews-container, #reviews-form-container{
     padding: 40px 40px;
+    width: 100%;
   } 
 
   .inside #map-container{
