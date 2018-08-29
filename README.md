@@ -2,7 +2,7 @@
 ---
 #### _Three Stage Course Material Project - Restaurant Reviews_
 
-## Project Overview: Stage 2 - Web Automation Tools, Fetch API, Lighthouse Rating
+## Project Overview: Stage 3
 
 ### Description
 A simple restaurant review site for the neighborhoods of Manhattan, Brooklyn, and Queens. The site offers location, reviews, and descriptions of various cuisines and provides details of each restaurant's location, ratings, and store hours.
@@ -11,13 +11,13 @@ A simple restaurant review site for the neighborhoods of Manhattan, Brooklyn, an
 1. npm 5.6.0
 2. Recent Modern internet browser (e.g. chrome)
 3. sails.js v1.0
-4. Data server: https://github.com/udacity/mws-restaurant-stage-2.git
+4. Data server: https://github.com/udacity/mws-restaurant-stage-3.git
 5. gulp 3.9.1
 
 ### Installing
 
 ## Data Server
-1. git clone https://github.com/udacity/mws-restaurant-stage-2.git
+1. git clone https://github.com/udacity/mws-restaurant-stage-3.git
 2. Go to its directory
 3. Install dependencies: npm i
 4. Install sails: npm i sails -g 
