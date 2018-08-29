@@ -34,6 +34,71 @@
     text-decoration: underline;
 }
 
+/* ====================== Favorite Toggle ====================== */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 180px;
+  height: 30px;
+}
+
+.switch input {
+  display:none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #444;
+  transition: .8s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .8s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #3397DB;
+}
+
+.switch:focus, .slider:hover {
+  box-shadow: 0 0 8px 3px orange;
+}
+
+input:checked + .slider:before {
+  transform: translateX(150px);
+}
+
+.slider:after {
+ color: white;
+ display: block;
+ position: absolute;
+ transform: translate(-50%,-50%);
+ top: 50%;
+ left: 50%;
+ font-size: 10px;
+ font-family: Verdana, sans-serif;
+}
+
+input:checked + .slider:after {  
+  content:'FAVORITE';
+}
+
+
 /* ====================== Restaurant Details ====================== */
 
 .inside {
@@ -111,7 +176,7 @@
 #restaurant-container{
   margin-top: 20px;
 }
-#restaurant-container, #reviews-container, #reviews-form-container {
+#restaurant-container, #reviews-container, #reviews-form-container, #restaurant-favorite {
   border-bottom: 1px solid #d9d9d9;
   border-top: 1px solid #fff;
   padding: 40px 40px 30px;

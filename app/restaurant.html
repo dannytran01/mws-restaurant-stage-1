@@ -33,7 +33,7 @@
   <main id="maincontent">
     <!-- Beginning map -->
     <section id="map-container">
-      <div role="application" id="map"></div>
+      <div role="application" id="map" tabindex="-1"></div>
     </section>
     <!-- End map -->
     <!-- Beginning restaurant -->
@@ -45,6 +45,15 @@
       <table id="restaurant-hours"></table>
     </section>
     <!-- end restaurant -->
+
+    <!-- favorite -->
+    <section id="restaurant-favorite">
+      <h3>Favorite?</h3>
+      <label class="switch" tabindex="0">
+        <input type="checkbox" id="favoriteBox">
+        <span class="slider"></span>
+      </label>
+    </section>
 
     <!-- start review form -->
     <section id="reviews-form-container">

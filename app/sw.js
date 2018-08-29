@@ -2,24 +2,26 @@ const STATIC_CACHE = 'mws-restaurant-v1';
 const MAP_CACHE = 'mws-google-v1';
 const PHOTO_CACHE = 'mws-content-imgs';
 
-// const staticUrls = [
-//     '/',
-//     'restaurant.html',
-//     'scripts/all_restaurant.js',
-//     'scripts/all_main.js',
-//     'styles/main.css'
-// ];
-
+//Prod files
 const staticUrls = [
-  '/',
-  '/restaurant.html',
-  'dbhelper.js',
-  'idb.js',
-  'main.js',
-  'restaurant_info.js',
-  'main.css',
-  'details.css'
+    '/',
+    'restaurant.html',
+    'scripts/all_restaurant.js',
+    'scripts/all_main.js',
+    'styles/main.css'
 ];
+
+// dev files
+// const staticUrls = [
+//   '/',
+//   '/restaurant.html',
+//   'dbhelper.js',
+//   'idb.js',
+//   'main.js',
+//   'restaurant_info.js',
+//   'main.css',
+//   'details.css'
+// ];
 
 self.addEventListener('install', event => {
   event.waitUntil(

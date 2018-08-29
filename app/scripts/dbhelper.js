@@ -252,10 +252,7 @@ class DBHelper {
 
           if (cursor.value.existInServer && cursor.value.existInServer === 'N') {
             let reviewObj = cursor.value;
-            // DBHelper.addReview(reviewObj, (err, response) => {});
             reviewArr.push(reviewObj);
-            reviewObj.existInServer = 'Y';
-            cursor.update(reviewObj);
           }
           cursor.continue();
       });
@@ -265,5 +262,23 @@ class DBHelper {
   }
 
 
+  static cleanUpOldData(callback){
+    return Promise.resolve(DBHelper.openDB().then(db => {
+      const tx = db.transaction('reviews', 'readwrite');
+      const reviewsObjStore = tx.objectStore('reviews');
+      let reviewArr = [];
+
+      reviewsObjStore.iterateCursor(cursor => {
+          if (!cursor) return;
+
+          if (cursor.value.existInServer && cursor.value.existInServer === 'N') {
+            cursor.delete();
+          }
+          cursor.continue();
+      });
+
+      return tx.complete.then(() =>{ return callback});
+    }));
+  }
 
 }
