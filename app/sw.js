@@ -2,6 +2,7 @@ const STATIC_CACHE = 'mws-restaurant-v1';
 const MAP_CACHE = 'mws-google-v1';
 const PHOTO_CACHE = 'mws-content-imgs';
 
+//Prod files
 const staticUrls = [
     '/',
     'restaurant.html',

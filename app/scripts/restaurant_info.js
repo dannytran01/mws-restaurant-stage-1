@@ -69,7 +69,13 @@ fetchRestaurantFromURL((error, restaurant) => {
     DBHelper.updateAllReviewsNotUpdatedToServer().then((addedReviews) => {
       if(addedReviews && addedReviews.length > 0) {
         DBHelper.addReview(addedReviews, (err, response) => {
-          getReviewDataAndUpdateUI();
+          if(response) {
+            DBHelper.cleanUpOldData()
+            .then(() => getReviewDataAndUpdateUI());
+          }
+          else if(err){
+            getReviewDataAndUpdateUI();
+          }
         });
       }
       else{
@@ -308,7 +314,13 @@ const submitReview = () => {
         DBHelper.updateAllReviewsNotUpdatedToServer().then((addedReviews) => {
           if(addedReviews && addedReviews.length > 0) {
             DBHelper.addReview(addedReviews, (err, response) => {
-              getReviewDataAndUpdateUI();
+              if(response) {
+                DBHelper.cleanUpOldData()
+                .then(() => getReviewDataAndUpdateUI());
+              }
+              else if(err){
+                getReviewDataAndUpdateUI();
+              }
             });
           }
           else{
